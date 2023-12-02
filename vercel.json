@@ -2,7 +2,7 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "Saloon_server.js"
+            "dest": "/"
         }
     ]
 }
