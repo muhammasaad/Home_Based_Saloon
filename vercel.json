@@ -1,8 +1,8 @@
 {
     "routes": [
         {
-            "source": "/(.*)",
-            "destination": "Saloon_server.js"
+            "src": "/(.*)",
+            "dest": "Saloon_server.js"
         }
     ]
 }
