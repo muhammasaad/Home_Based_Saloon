@@ -47,11 +47,10 @@ server.use("/order", order.router)
 
 server.get('/', (req, res) => {
     try {
-        res.send("eelo")
+        res.send("Hello")
     } catch (error) {
-        res.send("eelo", error)
+        res.send("error", error)
     }
-
 })
 
 const port = process.env.PORT || 1001
