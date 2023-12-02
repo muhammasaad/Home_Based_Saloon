@@ -1,10 +1,4 @@
 {
-    "builds": [
-        {
-            "src": "Saloon_server.js",
-            "use": "@vercel/node"
-        }
-    ],
     "routes": [
         {
             "src": "/(.*)",
