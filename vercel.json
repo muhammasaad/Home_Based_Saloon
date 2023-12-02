@@ -1,8 +1,8 @@
 {
-    "redirects": [
+    "routes": [
         {
             "source": "/(.*)",
-            "destination": "/"
+            "destination": "Saloon_server.js"
         }
     ]
 }
