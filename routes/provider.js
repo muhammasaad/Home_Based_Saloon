@@ -8,22 +8,29 @@ const sendEmailProvider = require("../Controller/UserEmailController")
 
 const auth = async (req, res, next) => {
     const fakeToken = req.get('Authorization');
-    const token = req.get('Authorization').split('Bearer ')[1];
-    console.log(fakeToken)
-    console.log(token)
+
+    if (!fakeToken) {
+        // 'Authorization' header is missing
+        return res.sendStatus(401);
+    }
+
+    const token = fakeToken.split('Bearer ')[1];
+
     try {
-        const verify = jwt.verify(token, process.env.SECRET_KEY)
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+
         if (verify.id) {
-            req.prov = await PROVIDER.findOne({ _id: verify.id })
-            next()
-        }
-        else {
-            res.sendStatus(401)
+            req.prov = await PROVIDER.findOne({ _id: verify.id });
+            next();
+        } else {
+            // 'id' is not present in the token payload
+            res.sendStatus(401);
         }
     } catch (error) {
-        res.sendStatus(401)
+        // JWT verification failed
+        res.sendStatus(401);
     }
-}
+};
 
 router.
     post('/signup', providerCRUD.SignUP)
@@ -41,12 +48,12 @@ router.
     .post('/add/feedback', providerCRUD.postFeedbackPROV)
     .delete('/logout', providerCRUD.logOUT)
     .delete('/deleteProv', providerCRUD.deletePROV)
-    .patch('/add/services', serviceCRUD.addServices )
-    .patch('/edit/services', serviceCRUD.editServices )
+    .patch('/add/services', serviceCRUD.addServices)
+    .patch('/edit/services', serviceCRUD.editServices)
     .get('/get/services', serviceCRUD.getServices)
     .get('/get/only/services', serviceCRUD.getOnlyService)
     .get('/get/category/services', serviceCRUD.getCategoryService)
-    .delete('/delete/services', serviceCRUD.deleteServices )
+    .delete('/delete/services', serviceCRUD.deleteServices)
 
 
 exports.router = router
