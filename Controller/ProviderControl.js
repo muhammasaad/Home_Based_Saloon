@@ -123,56 +123,68 @@ exports.deletePROV = async (req, res) => {
 
 exports.GettingPROV = async (req, res) => {
     try {
-        const { id } = req.body
-        if (!id) {
-            return res.status(400).json({ message: "All fields are required." });
-        }
-        // Find the user by email
-        const prov = await PROVIDER.findOne({ id: id });
+        const token = req.get('Authorization').split('Bearer ')[1];
 
-        if (prov) {
-            // If a user with the provided email is found, send the user data as a response
-            res.status(200).json({ message: "User found", prov });
-        } else {
-            // If no user with the provided email is found, respond with a 404 Not Found status
-            res.status(404).json({ message: "User not found" });
+        if (!token) {
+            // If the token is missing, respond with a 401 Unauthorized status
+            return new ResponseHanding(res, 401, "Token is not Valid");
         }
+
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        console.log(verify)
+        if (!verify.id) {
+            // If the 'id' is not present in the token payload, respond with a 401 Unauthorized status
+            return new ResponseHanding(res, 401, "Unauthorized");
+        }
+
+        const existingProv = await PROVIDER.findOne({ _id: verify.id });
+
+        if (!existingProv) {
+            // If the user is not found, respond with a 404 Not Found status
+            return new ResponseHanding(res, 404, "Provider not found", false);
+        }
+
+        // If a user with the provided 'id' is found, send the user data as a response
+        return new ResponseHanding(res, 200, "Getting Data", true, existingProv);
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        return new ResponseHanding(res, 500, "Internal Server Error");
     }
 };
 
 
 exports.replaceAndUpdatePROV = async (req, res) => {
+    const token = req.get('Authorization').split('Bearer ')[1];
     try {
-        const { id, firstname, lastname, email, phoneNumber } = req.body
-        if (!id) {
-            return res.status(400).json({ message: "All fields are required." });
-        }
-        // Find the user by their ID
-        const existingProv = await PROVIDER.findOne({ id: id });
-
-        if (!existingProv) {
-            // If the user is not found, respond with a 404 Not Found status
-            res.status(404).json({ message: "User not found" });
-        } else {
-            // Update the user with the new data and return the updated user
-            const updatedProv = await PROVIDER.findOneAndUpdate(
-                { id: id },
-                { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
-                { new: true }
-            );
-
-            if (updatedProv) {
-                // If the user is updated successfully, respond with a 200 OK status and the updated user data
-                res.status(200).json(updatedProv);
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        if (verify.id) {
+            const existingProv = await PROVIDER.findOne({ _id: verify.id });
+            if (!existingProv) {
+                // If the user is not found, respond with a 404 Not Found status
+                res.status(404).json({ message: "Provider not found" });
             } else {
-                // If there was an issue updating the user, respond with a 500 Internal Server Error
-                res.status(500).json({ message: "User update failed" });
+                // Update the user with the new data and return the updated user
+                const updatedProv = await PROVIDER.findOneAndUpdate(
+                    { id: id },
+                    { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
+                    { new: true }
+                );
+
+                if (updatedProv) {
+                    // If the user is updated successfully, respond with a 200 OK status and the updated user data
+                    res.status(200).json(updatedProv);
+                } else {
+                    // If there was an issue updating the user, respond with a 500 Internal Server Error
+                    res.status(500).json({ message: "User update failed" });
+                }
             }
         }
+        const { firstname, lastname, email, phoneNumber } = req.body
+
+
+
+
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
@@ -214,7 +226,7 @@ exports.postAddressPROV = async (req, res) => {
 exports.deleteAddressPROV = async (req, res) => {
     try {
         const { id, addressIndex } = req.body;
-        if (!id || (addressIndex === undefined )) {
+        if (!id || (addressIndex === undefined)) {
             return res.status(400).json({ message: "All fields are required." });
         }
 
@@ -254,8 +266,8 @@ exports.postFeedbackPROV = async (req, res) => {
         const message = req.body.message
 
         const fd = {
-            option : option,
-            message : message
+            option: option,
+            message: message
         }
 
         if (!id || !option && !message) {

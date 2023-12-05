@@ -4,41 +4,42 @@ const providerCRUD = require("../Controller/ProviderControl")
 const serviceCRUD = require("../Controller/ServiceController")
 const providerModel = require("../Model/ProviderSchemaModel")
 const PROVIDER = providerModel.provider;
+const ResponseHanding = require('../ResponseHandling');
 const sendEmailProvider = require("../Controller/UserEmailController")
+const jwt = require('jsonwebtoken')
+
 
 const auth = async (req, res, next) => {
-    const fakeToken = req.get('Authorization');
-
-    if (!fakeToken) {
-        // 'Authorization' header is missing
-        return res.sendStatus(401);
-    }
-
-    const token = fakeToken.split('Bearer ')[1];
-
+    const token = req.get('Authorization').split('Bearer ')[1];
     try {
         const verify = jwt.verify(token, process.env.SECRET_KEY);
 
         if (verify.id) {
-            req.prov = await PROVIDER.findOne({ _id: verify.id });
+            console.log(token)
+            // req.prov = await PROVIDER.findOne({ _id: verify.id });
             next();
         } else {
             // 'id' is not present in the token payload
-            res.sendStatus(401);
+            return new ResponseHanding(res, 401, "Unauthorized");
         }
     } catch (error) {
         // JWT verification failed
-        res.sendStatus(401);
+        return new ResponseHanding(res, 401, "Unauthorized");
     }
 };
 
 router.
+    // done
     post('/signup', providerCRUD.SignUP)
-    .get('/get', providerCRUD.GettingPROV)
+    // done
+    .get('/get', auth, providerCRUD.GettingPROV)
+    // done
     .post('/sendEmail', sendEmailProvider.sendEmailProvider)
+    // done
     .post('/login', providerCRUD.LogIN)
+
     .get('/get/session', providerCRUD.GettingPROVSession)
-    .patch('/update/ProvDetail', providerCRUD.replaceAndUpdatePROV)
+    .patch('/update/ProvDetail', auth, providerCRUD.replaceAndUpdatePROV)
     .post('/post/address', providerCRUD.postAddressPROV)
     .post('/add/reviews/ratings', serviceCRUD.createServiceReview)
     .delete('/delete/reviews/ratings', serviceCRUD.deleteServiceReview)
