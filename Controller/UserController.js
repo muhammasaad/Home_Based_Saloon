@@ -49,31 +49,31 @@ exports.LogIN = async (req, res) => {
 
     try {
         if (!email || !password) {
-            return res.status(400).json({ message: "Both email and password are required fields." });
+            return new ResponseHanding(res, 400, "All Fields are required")
         }
 
         // Find the user by email
         const user = await USER.findOne({ email: email });
 
         if (!user) {
-            return res.status(404).json({ message: "User not found." });
+            return new ResponseHanding(res, 404, "User not Found")
         }
 
         const passwordMatch = await bcrypt.compare(password, user.password);
 
         if (!passwordMatch) {
-            return res.status(401).json({ message: "Invalid password." });
+            return new ResponseHanding(res, 401, "Invalid Password")
         }
 
-        const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY)
         // OTP is valid; proceed with login
-        req.session.isAuthenticated = true;
-        req.session.user = { token };
+        // req.session.isAuthenticated = true;
+        // req.session.user = { token };
+        const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY);
         return new ResponseHanding(res, 200, "Logged in successfully", true, token)
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        return new ResponseHanding(res, 500, "Internal Server Error")
     }
 }
 

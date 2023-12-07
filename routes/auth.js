@@ -34,7 +34,10 @@ router.
     // done
     .post('/otp-verification', userCRUD.verifyAccountSignup)
     // .post('/sendEmail', emailSender.sendEmail)
+    // done
     .post('/login', userCRUD.LogIN)
+
+    
     .get('/get/session', userCRUD.GettingUSERSession)
     .post('/add/fav/services', auth, userCRUD.addFavServices)
     .get('/fetch/fav/services', userCRUD.getFavServices)
