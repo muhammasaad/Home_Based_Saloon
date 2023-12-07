@@ -29,10 +29,12 @@ const auth = async (req, res, next) => {
 
 router.
     // post('/signup', userCRUD.SignUP)
+    // done
     post('/signup', emailSender.sendEmailUser)
+    // done
     .post('/verify/signup', userCRUD.verifyAccountSignup)
     // .post('/sendEmail', emailSender.sendEmail)
-    // .post('/login', userCRUD.LogIN)
+    .post('/login', userCRUD.LogIN)
     .get('/get/session', userCRUD.GettingUSERSession)
     .post('/add/fav/services', auth, userCRUD.addFavServices)
     .get('/fetch/fav/services', userCRUD.getFavServices)

@@ -22,71 +22,71 @@ const transport = nodemailer.createTransport({
     },
 })
 
-exports.sendEmail = express_async_handler(async (req, res) => {
-    const { email, password } = req.body;
+// exports.sendEmail = express_async_handler(async (req, res) => {
+//     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ message: "Email and password are required." });
-    }
+//     if (!email || !password) {
+//         return res.status(400).json({ message: "Email and password are required." });
+//     }
 
-    try {
-        const user = await USER.findOne({ email });
+//     try {
+//         const user = await USER.findOne({ email });
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found." });
-        }
+//         if (!user) {
+//             return res.status(404).json({ message: "User not found." });
+//         }
 
-        const passwordMatch = await bcrypt.compare(password, user.password);
+//         const passwordMatch = await bcrypt.compare(password, user.password);
 
-        if (!passwordMatch) {
-            return res.status(401).json({ message: "Invalid password." });
-        }
+//         if (!passwordMatch) {
+//             return res.status(401).json({ message: "Invalid password." });
+//         }
 
-        const OTP = otpGenerator.generate(4, {
-            digits: true,
-            lowerCaseAlphabets: false,
-            upperCaseAlphabets: false,
-            specialChars: false,
-        });
+//         const OTP = otpGenerator.generate(4, {
+//             digits: true,
+//             lowerCaseAlphabets: false,
+//             upperCaseAlphabets: false,
+//             specialChars: false,
+//         });
 
-        if (OTP) {
-            // Store the OTP and its expiration timer
-            otpMap.set(user.email, OTP);
-            console.log(otpMap.get(email));
-            console.log(otpMap.has(email));
-            // Set a timer to remove the OTP after 30 seconds
-            setTimeout(async () => {
-                otpMap.delete(user.email);
-                await USER.updateOne({ email: email }, { $unset: { OTP: 1 } })
-            }, 30000); // 30,000 milliseconds = 30 seconds
+//         if (OTP) {
+//             // Store the OTP and its expiration timer
+//             otpMap.set(user.email, OTP);
+//             console.log(otpMap.get(email));
+//             console.log(otpMap.has(email));
+//             // Set a timer to remove the OTP after 30 seconds
+//             setTimeout(async () => {
+//                 otpMap.delete(user.email);
+//                 await USER.updateOne({ email: email }, { $unset: { OTP: 1 } })
+//             }, 30000); // 30,000 milliseconds = 30 seconds
 
-            user.OTP = OTP;
-            await user.save();
+//             user.OTP = OTP;
+//             await user.save();
 
-            const mailOptions = {
-                from: process.env.SMTP_MAIL,
-                to: user.email,
-                subject: 'OTP For verification',
-                text: `Verification Code for Login: ${OTP}`,
-            };
+//             const mailOptions = {
+//                 from: process.env.SMTP_MAIL,
+//                 to: user.email,
+//                 subject: 'OTP For verification',
+//                 text: `Verification Code for Login: ${OTP}`,
+//             };
 
-            transport.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.error(error);
-                    res.status(500).json({ message: 'Failed to send OTP email' });
-                } else {
-                    console.log('Email sent successfully');
-                    res.status(200).json({ message: 'Email sent successfully' });
-                }
-            });
-        } else {
-            res.status(400).json({ message: 'OTP expired or not generated' });
-        }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-});
+//             transport.sendMail(mailOptions, function (error, info) {
+//                 if (error) {
+//                     console.error(error);
+//                     res.status(500).json({ message: 'Failed to send OTP email' });
+//                 } else {
+//                     console.log('Email sent successfully');
+//                     res.status(200).json({ message: 'Email sent successfully' });
+//                 }
+//             });
+//         } else {
+//             res.status(400).json({ message: 'OTP expired or not generated' });
+//         }
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal Server Error' });
+//     }
+// });
 
 
 exports.sendEmailUser = express_async_handler(async (req, res) => {
@@ -94,13 +94,13 @@ exports.sendEmailUser = express_async_handler(async (req, res) => {
     try {
         // Check if any of the required fields are missing
         if (!firstname || !lastname || !email || !password || !country) {
-            return res.status(400).json({ message: "All fields are required." });
+            return new ResponseHanding(res, 400, "All Fields are required")
         }
 
         // Check if the email is already in use
         const existingUser = await USER.findOne({ email });
         if (existingUser) {
-            return res.status(409).json({ message: "Email is already registered." });
+            return new ResponseHanding(res, 409, "Email is already Registered")
         }
 
         const saltRound = 10;
@@ -131,7 +131,7 @@ exports.sendEmailUser = express_async_handler(async (req, res) => {
                 from: process.env.SMTP_MAIL,
                 to: email,
                 subject: 'OTP For verification',
-                text: `Verification Code for Login: ${OTP}`,
+                text: `Verification Code to walk-in: ${OTP}`,
             };
 
             const user = await USER.create({ firstname, lastname, email, password: hashedPassword, country: country });
@@ -141,19 +141,18 @@ exports.sendEmailUser = express_async_handler(async (req, res) => {
             transport.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     console.error(error);
-                    res.status(500).json({ message: 'Failed to send OTP email' });
+                    return new ResponseHanding(res, 500, "Failed to send OTP", false)
                 } else {
                     console.log('Email sent successfully');
-                    // res.status(200).json({ message: 'Email sent successfully' });
                     return new ResponseHanding(res, 200, "Email sent successfully and Account Created without Verify", true, user)
                 }
             });
         } else {
-            res.status(400).json({ message: 'OTP expired or not generated' });
+            return new ResponseHanding(res, 400, "OTP Expired or Not generated", false)
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        return new ResponseHanding(res, 500, "Internal Server Error", false)
     }
 });
 

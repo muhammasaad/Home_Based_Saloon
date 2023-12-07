@@ -45,11 +45,11 @@ exports.SignUP = async (req, res) => {
 }
 
 exports.LogIN = async (req, res) => {
-    const { email, OTP } = req.body;
+    const { email, password } = req.body;
 
     try {
-        if (!email || !OTP) {
-            return res.status(400).json({ message: "Both email and OTP are required fields." });
+        if (!email || !password) {
+            return res.status(400).json({ message: "Both email and password are required fields." });
         }
 
         // Find the user by email
@@ -59,9 +59,12 @@ exports.LogIN = async (req, res) => {
             return res.status(404).json({ message: "User not found." });
         }
 
-        if (user.OTP !== OTP) {
-            return res.status(401).json({ message: "Invalid OTP. Please try again." });
+        const passwordMatch = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ message: "Invalid password." });
         }
+
         const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY)
         // OTP is valid; proceed with login
         req.session.isAuthenticated = true;
@@ -79,27 +82,28 @@ exports.verifyAccountSignup = async (req, res) => {
 
     try {
         if (!email || !OTP) {
-            return res.status(400).json({ message: "Both email and OTP are required fields." });
+            return new ResponseHanding(res, 400, "All Fields are required")
         }
 
         // Find the user by email
         const user = await USER.findOne({ email: email });
 
         if (!user) {
-            return res.status(404).json({ message: "User not found." });
+            return new ResponseHanding(res, 404, "User not found")
         }
 
         if (user.OTP !== OTP) {
-            return res.status(401).json({ message: "Invalid OTP. Please try again." });
+            return new ResponseHanding(res, 401, "OTP is invalid")
         }
 
         user.verified = true
         user.save()
-        return new ResponseHanding(res, 200, "Created Account verified", true)
+        const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY);
+        return new ResponseHanding(res, 200, "Created Account verified", true, token)
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        return new ResponseHanding(res, 500, "Internal Server Error")
     }
 }
 
