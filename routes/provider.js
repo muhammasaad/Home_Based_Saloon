@@ -38,8 +38,8 @@ router.
     // done
     .post('/otp', providerCRUD.LogIN)
 
-    .get('/get/session', providerCRUD.GettingPROVSession)
-    .patch('/update/ProvDetail', auth, providerCRUD.replaceAndUpdatePROV)
+    // .get('/get/session', providerCRUD.GettingPROVSession)
+    .patch('/updateProfile', auth, providerCRUD.replaceAndUpdatePROV)
     .post('/post/address', providerCRUD.postAddressPROV)
     .post('/add/reviews/ratings', serviceCRUD.createServiceReview)
     .delete('/delete/reviews/ratings', serviceCRUD.deleteServiceReview)

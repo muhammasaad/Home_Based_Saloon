@@ -162,35 +162,31 @@ exports.replaceAndUpdatePROV = async (req, res) => {
             const existingProv = await PROVIDER.findOne({ _id: verify.id });
             if (!existingProv) {
                 // If the user is not found, respond with a 404 Not Found status
-                res.status(404).json({ message: "Provider not found" });
-            } else {
-                // Update the user with the new data and return the updated user
-                const updatedProv = await PROVIDER.findOneAndUpdate(
-                    { id: id },
-                    { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
-                    { new: true }
-                );
-
-                if (updatedProv) {
-                    // If the user is updated successfully, respond with a 200 OK status and the updated user data
-                    res.status(200).json(updatedProv);
-                } else {
-                    // If there was an issue updating the user, respond with a 500 Internal Server Error
-                    res.status(500).json({ message: "User update failed" });
-                }
+                return new ResponseHanding(res, 404, "Provider not Found");
             }
+
+            const updatedProv = await PROVIDER.findOneAndUpdate(
+                { _id: verify.id },
+                { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
+                { new: true }
+            );
+
+            if (updatedProv) {
+                // If the user is updated successfully, respond with a 200 OK status and the updated user data
+                new ResponseHanding(res, 200, "Updated Profile", true, updatedProv);
+            } else {
+                // If there was an issue updating the user, respond with a 500 Internal Server Error
+                new ResponseHanding(res, 500, "Updated Failed", false);
+            }
+
         }
-        const { firstname, lastname, email, phoneNumber } = req.body
-
-
-
-
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        return new ResponseHanding(res, 500, "Internal server Error");
     }
 };
+
 
 exports.postAddressPROV = async (req, res) => {
     try {
