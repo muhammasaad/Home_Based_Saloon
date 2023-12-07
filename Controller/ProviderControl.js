@@ -21,7 +21,7 @@ exports.SignUP = async (req, res) => {
         }
 
         // Create a new user
-        const prov = await PROVIDER.create({ shortcode: shortcode, firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber, salonName: salonName, profilepic });
+        const prov = await PROVIDER.create({ shortcode: shortcode, firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber, salonName: salonName, profilepic: "" });
         prov.id = prov._id
         prov.save()
         // Return a success response
