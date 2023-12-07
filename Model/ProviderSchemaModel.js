@@ -58,7 +58,8 @@ const providerSchema = new Schema({
         type: Number,
     },
     phoneNumber: { type: String },
-    wallet: Number
+    wallet: Number,
+    tokenVersion: { type: String }
 })
 
 exports.provider = mongoose.model("Provider", providerSchema)

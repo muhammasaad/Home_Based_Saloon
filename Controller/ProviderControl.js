@@ -2,6 +2,7 @@ const express = require('express')
 const providerModel = require("../Model/ProviderSchemaModel")
 const ResponseHanding = require('../ResponseHandling');
 const PROVIDER = providerModel.provider;
+const otpGenerator = require('otp-generator')
 const jwt = require('jsonwebtoken')
 const bcrypt = require("bcrypt")
 
@@ -50,9 +51,18 @@ exports.LogIN = async (req, res) => {
             return new ResponseHanding(res, 401, "Authentication failed. Invalid shortcode or OTP.", false);
         }
 
-        // Sign a JWT token
-        const token = await jwt.sign({ id: prov._id }, process.env.SECRET_KEY);
+        const tokenVes = otpGenerator.generate(9, {
+            digits: true,
+            lowerCaseAlphabets: false,
+            upperCaseAlphabets: false,
+            specialChars: false,
+        });
+        const tokenVersion = tokenVes
 
+        // Sign a JWT token
+        const token = await jwt.sign({ id: prov._id, tokenVersion: tokenVersion }, process.env.SECRET_KEY);
+        prov.tokenVersion = tokenVersion
+        prov.save();
         // Set session variables
         // req.session.isAuthenticated = true;
         // req.session.prov = { token };

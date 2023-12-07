@@ -16,8 +16,12 @@ const auth = async (req, res, next) => {
 
         if (verify.id) {
             console.log(token)
-            // req.prov = await PROVIDER.findOne({ _id: verify.id });
-            next();
+            const prov = PROVIDER.findOne({ id: verify.id })
+            if (prov.tokenVersion === verify.tokenVersion) {
+                next();
+            } else {
+                return new ResponseHanding(res, 401, "Token Expired ");
+            }
         } else {
             // 'id' is not present in the token payload
             return new ResponseHanding(res, 401, "Unauthorized");
