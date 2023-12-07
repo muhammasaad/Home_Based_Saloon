@@ -17,6 +17,8 @@ const auth = async (req, res, next) => {
         if (verify.id) {
             console.log(token)
             const prov = await PROVIDER.findOne({ _id: verify.id })
+            console.log(prov.tokenVersion)
+            console.log(verify.tokenVersion)
             if (prov.tokenVersion === verify.tokenVersion) {
                 next();
             } else {
