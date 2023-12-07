@@ -60,7 +60,7 @@ exports.LogIN = async (req, res) => {
         const tokenVersion = tokenVes
 
         // Sign a JWT token
-        const token = await jwt.sign({ id: prov._id, tokenVersion: tokenVersion }, process.env.SECRET_KEY);
+        const token = jwt.sign({ id: prov._id, tokenVersion: tokenVersion }, process.env.SECRET_KEY);
         prov.tokenVersion = tokenVersion
         prov.save();
         // Set session variables
