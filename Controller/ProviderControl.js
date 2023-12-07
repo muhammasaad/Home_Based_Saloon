@@ -166,7 +166,7 @@ exports.replaceAndUpdatePROV = async (req, res) => {
             }
 
             const updatedProv = await PROVIDER.findOneAndUpdate(
-                { _id: verify.id },
+                { id: existingProv.id },
                 { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
                 { new: true }
             );
