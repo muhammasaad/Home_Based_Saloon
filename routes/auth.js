@@ -4,25 +4,29 @@ const userCRUD = require("../Controller/UserController")
 const emailSender = require("../Controller/UserEmailController")
 const userModel = require("../Model/UserSchemaModel")
 const USER = userModel.user;
+const ResponseHanding = require('../ResponseHandling');
 const jwt = require('jsonwebtoken')
 
 
 const auth = async (req, res, next) => {
-    const fakeToken = req.get('Authorization');
     const token = req.get('Authorization').split('Bearer ')[1];
-    console.log(fakeToken)
     console.log(token)
     try {
         const verify = jwt.verify(token, process.env.SECRET_KEY)
         if (verify.id) {
-            req.user = await USER.findOne({ _id: verify.id })
-            next()
+            console.log(token)
+            const user = await USER.findOne({ _id: verify.id })
+            if (user.tokenVersion === verify.tokenVersion) {
+                next();
+            } else {
+                new ResponseHanding(res, 401, "Token Expired ");
+            }
         }
         else {
-            res.sendStatus(401)
+            new ResponseHanding(res, 401, "Unauthorized ");
         }
     } catch (error) {
-        res.sendStatus(401)
+        new ResponseHanding(res, 401, "Unauthorized ");
     }
 }
 
@@ -36,8 +40,9 @@ router.
     // .post('/sendEmail', emailSender.sendEmail)
     // done
     .post('/login', userCRUD.LogIN)
+    .get('/get', auth, userCRUD.gettingUSER)
 
-    
+
     .get('/get/session', userCRUD.GettingUSERSession)
     .post('/add/fav/services', auth, userCRUD.addFavServices)
     .get('/fetch/fav/services', userCRUD.getFavServices)

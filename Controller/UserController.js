@@ -65,10 +65,21 @@ exports.LogIN = async (req, res) => {
             return new ResponseHanding(res, 401, "Invalid Password")
         }
 
+        const tokenVes = otpGenerator.generate(9, {
+            digits: true,
+            lowerCaseAlphabets: false,
+            upperCaseAlphabets: false,
+            specialChars: false,
+        });
+        const tokenVersion = tokenVes
+
+
         // OTP is valid; proceed with login
         // req.session.isAuthenticated = true;
         // req.session.user = { token };
-        const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY);
+        const token = await jwt.sign({ id: user._id, tokenVersion: tokenVersion }, process.env.SECRET_KEY);
+        user.tokenVersion = tokenVersion
+        user.save()
         return new ResponseHanding(res, 200, "Logged in successfully", true, token)
     } catch (error) {
         // Handle any unexpected errors
@@ -98,8 +109,7 @@ exports.verifyAccountSignup = async (req, res) => {
 
         user.verified = true
         user.save()
-        const token = await jwt.sign({ id: user._id }, process.env.SECRET_KEY);
-        return new ResponseHanding(res, 200, "Created Account verified", true, token)
+        return new ResponseHanding(res, 200, "Created Account verified", true, user)
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
@@ -161,26 +171,28 @@ exports.deleteUSER = async (req, res) => {
     }
 };
 
-exports.GettingUSER = async (req, res) => {
+exports.gettingUSER = async (req, res) => {
     try {
-        const { id } = req.body
-        if (!id) {
-            return res.status(400).json({ message: "All fields are required." });
+        const token = req.get('Authorization').split('Bearer ')[1];
+
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        if (!verify.id) {
+            // If the 'id' is not present in the token payload, respond with a 401 Unauthorized status
+            return new ResponseHanding(res, 401, "Unauthorized");
         }
-        // Find the user by email
-        const user = await USER.findOne({ id: id });
+        const user = await USER.findOne({ _id: verify.id });
 
         if (user) {
             // If a user with the provided email is found, send the user data as a response
-            res.status(200).json({ message: "User found", user });
+            new ResponseHanding(res, 200, "User Found", true, user);
         } else {
             // If no user with the provided email is found, respond with a 404 Not Found status
-            res.status(404).json({ message: "User not found" });
+            new ResponseHanding(res, 404, "User not Found", false);
         }
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        new ResponseHanding(res, 500, "Internal Server Error");
     }
 };
 
