@@ -162,14 +162,14 @@ exports.sendEmailProvider = express_async_handler(async (req, res) => {
     const { shortcode } = req.body;
 
     if (!shortcode) {
-        return res.status(400).json({ message: "shortcode is required." });
+        return new ResponseHanding(res, 400, "ShortCode is required", false)
     }
 
     try {
         const prov = await PROVIDER.findOne({ shortcode: shortcode });
 
         if (!prov) {
-            return res.status(404).json({ message: "Provider not found." });
+            return new ResponseHanding(res, 404, "Provider Not Found", false)
         }
 
         const OTP = otpGenerator.generate(4, {
@@ -202,17 +202,17 @@ exports.sendEmailProvider = express_async_handler(async (req, res) => {
             transport.sendMail(mailOptions, function (error, info) {
                 if (error) {
                     console.error(error);
-                    res.status(500).json({ message: 'Failed to send OTP email' });
+                    return new ResponseHanding(res, 500, "Failed to send OTP", false)
                 } else {
                     console.log('Email sent successfully');
-                    res.status(200).json({ message: 'Email sent successfully' });
+                    return new ResponseHanding(res, 200, "Email sent successfully", true)
                 }
             });
         } else {
-            res.status(400).json({ message: 'OTP expired or not generated' });
+            return new ResponseHanding(res, 400, "OTP not generated", false)
         }
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        return new ResponseHanding(res, 500, "Internal server Error")
     }
 });

@@ -39,7 +39,7 @@ exports.LogIN = async (req, res) => {
     try {
         // Check if both shortcode and OTP are provided
         if (!shortcode || !OTP) {
-            return res.status(400).json({ message: "Both shortcode and OTP are required." });
+            return new ResponseHanding(res, 400, "All Fields are required", false)
         }
 
         // Find the user by shortcode and OTP
@@ -54,8 +54,8 @@ exports.LogIN = async (req, res) => {
         const token = await jwt.sign({ id: prov._id }, process.env.SECRET_KEY);
 
         // Set session variables
-        req.session.isAuthenticated = true;
-        req.session.prov = { token };
+        // req.session.isAuthenticated = true;
+        // req.session.prov = { token };
 
         // Return success response with the token
         return new ResponseHanding(res, 200, "Logged in successfully", true, token);
@@ -63,7 +63,7 @@ exports.LogIN = async (req, res) => {
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).send('Internal Server Error');
+        return new ResponseHanding(res, 500, "Internal Server Error");
     }
 }
 

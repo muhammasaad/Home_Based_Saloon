@@ -34,9 +34,9 @@ router.
     // done
     .get('/get', auth, providerCRUD.GettingPROV)
     // done
-    .post('/sendEmail', sendEmailProvider.sendEmailProvider)
+    .post('/shortcode', sendEmailProvider.sendEmailProvider)
     // done
-    .post('/login', providerCRUD.LogIN)
+    .post('/otp', providerCRUD.LogIN)
 
     .get('/get/session', providerCRUD.GettingPROVSession)
     .patch('/update/ProvDetail', auth, providerCRUD.replaceAndUpdatePROV)
