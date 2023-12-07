@@ -5,6 +5,7 @@ const USER = userModel.user;
 const SERVICE = serviceModel.provider;
 const bcrypt = require("bcrypt");
 const ResponseHanding = require('../ResponseHandling');
+const otpGenerator = require('otp-generator')
 const otpMap = new Map();
 const jwt = require('jsonwebtoken')
 
