@@ -32,7 +32,7 @@ router.
     // done
     post('/signup', emailSender.sendEmailUser)
     // done
-    .post('/verify/signup', userCRUD.verifyAccountSignup)
+    .post('/otp-verification', userCRUD.verifyAccountSignup)
     // .post('/sendEmail', emailSender.sendEmail)
     .post('/login', userCRUD.LogIN)
     .get('/get/session', userCRUD.GettingUSERSession)
