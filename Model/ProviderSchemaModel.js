@@ -4,6 +4,7 @@ const { Schema } = require("mongoose");
 
 const providerSchema = new Schema({
     id: Schema.Types.ObjectId,
+    profilepic: { type: String },
     shortcode: { type: String, unique: true },
     firstname: { type: String, required: true },
     lastname: { type: String, required: true },

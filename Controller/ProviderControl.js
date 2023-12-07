@@ -156,7 +156,7 @@ exports.GettingPROV = async (req, res) => {
 
 exports.replaceAndUpdatePROV = async (req, res) => {
     const token = req.get('Authorization').split('Bearer ')[1];
-    const { firstname, lastname, email, phoneNumber } = req.body;
+    const { firstname, lastname, email, phoneNumber, profilepic } = req.body;
     try {
         const verify = jwt.verify(token, process.env.SECRET_KEY);
         if (verify.id) {
@@ -168,7 +168,7 @@ exports.replaceAndUpdatePROV = async (req, res) => {
 
             const updatedProv = await PROVIDER.findOneAndUpdate(
                 { id: existingProv.id },
-                { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
+                { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber, profilepic: profilepic },
                 { new: true }
             );
 
