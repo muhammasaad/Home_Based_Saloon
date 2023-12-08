@@ -90,10 +90,10 @@ const transport = nodemailer.createTransport({
 
 
 exports.sendEmailUser = express_async_handler(async (req, res) => {
-    const { firstname, lastname, email, password, country } = req.body;
+    const { firstname, lastname, email, password, country, phoneNumber } = req.body;
     try {
         // Check if any of the required fields are missing
-        if (!firstname || !lastname || !email || !password || !country) {
+        if (!firstname || !lastname || !email || !password || !country || !phoneNumber) {
             return new ResponseHanding(res, 400, "All Fields are required")
         }
 
@@ -134,7 +134,7 @@ exports.sendEmailUser = express_async_handler(async (req, res) => {
                 text: `Verification Code to walk-in: ${OTP}`,
             };
 
-            const user = await USER.create({ firstname, lastname, email, password: hashedPassword, country: country });
+            const user = await USER.create({ firstname, lastname, email, password: hashedPassword, country: country, phoneNumber: phoneNumber });
             user.OTP = OTP
             user.save();
 
@@ -161,12 +161,12 @@ exports.sendEmailUserPasswordOTP = express_async_handler(async (req, res) => {
     const { email } = req.body;
     try {
         // Check if any of the required fields are missing
-        if ( !email) {
+        if (!email) {
             return new ResponseHanding(res, 400, "All Fields are required")
         }
 
         const user = await USER.findOne({ email: email });
-        
+
 
         const OTP = otpGenerator.generate(4, {
             digits: true,
@@ -194,7 +194,7 @@ exports.sendEmailUserPasswordOTP = express_async_handler(async (req, res) => {
                 text: `Verification Code to walk-in: ${OTP}`,
             };
 
-           
+
             user.OTP = OTP
             user.save();
 

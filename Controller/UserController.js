@@ -17,7 +17,7 @@ exports.SignUP = async (req, res) => {
         const { firstname, lastname, email, password, country, phoneNumber } = req.body;
 
         // Check if any of the required fields are missing
-        if (!firstname || !lastname || !email || !password || !country |phoneNumber) {
+        if (!firstname || !lastname || !email || !password || !country | phoneNumber) {
             return res.status(400).json({ message: "All fields are required." });
         }
 
@@ -244,7 +244,7 @@ exports.ResetPassUSER = async (req, res) => {
     try {
         const { email, password } = req.body
         if (!email || !password) {
-            return res.status(400).json({ message: "All fields are required." });
+            return new ResponseHanding(res, 400, "All Fields are required");
         }
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -254,36 +254,44 @@ exports.ResetPassUSER = async (req, res) => {
 
         if (user) {
             // If a user with the provided email is found and the password is updated, respond with a success message
-            res.status(200).json({ message: "Password reset successfully" });
+            new ResponseHanding(res, 200, "Password Reset Successfully");
         } else {
             // If no user with the provided email is found, respond with a 404 Not Found status
-            res.status(404).json({ message: "User not found" });
+            new ResponseHanding(res, 404, "User not Found");
         }
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        return new ResponseHanding(res, 500, "Internal Server Error");
     }
 };
 
 
-exports.updatePassUSER = async (req, res) => {
-    try {
-        const { id, newPassword, password } = req.body
-        if (!id || !newPassword || !password) {
-            return res.status(400).json({ message: "All fields are required." });
-        }
-        // Find the user by id
-        const user = await USER.findOne({ id: id });
 
+
+exports.changePassword = async (req, res) => {
+    try {
+        const token = req.get('Authorization').split('Bearer ')[1];
+
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        if (!verify.id) {
+            // If the 'id' is not present in the token payload, respond with a 401 Unauthorized status
+            return new ResponseHanding(res, 401, "Unauthorized");
+        }
+
+        const user = await USER.findOne({ _id: verify.id });
         if (!user) {
             // If the user is not found, respond with a 404 Not Found status
-            res.status(404).json({ message: "User not found" });
-            return;
+            return new ResponseHanding(res, 404, "User not found");
+        }
+
+        const { oldPassword, newPassword } = req.body
+        if (!newPassword || !oldPassword) {
+            return new ResponseHanding(res, 400, "All Fields are required");
         }
 
         // Compare the provided password with the stored password
-        const passwordMatch = await bcrypt.compare(password, user.password);
+        const passwordMatch = await bcrypt.compare(oldPassword, user.password);
 
         if (passwordMatch) {
             // If the provided password matches the stored password, update the password
@@ -292,21 +300,21 @@ exports.updatePassUSER = async (req, res) => {
 
             // Update the password in the database
             const updatedUser = await USER.findOneAndUpdate(
-                { id: id },
+                { _id: verify.id },
                 { password: hashedPassword },
                 { new: true }
             );
 
             // Respond with a success message
-            res.status(200).json({ message: "Password updated successfully" });
+            new ResponseHanding(res, 200, "Password Updated successfully", true, updatedUser);
         } else {
             // If the provided password does not match the stored password, respond with a 401 Unauthorized status
-            res.status(401).json({ message: "Invalid old password" });
+            new ResponseHanding(res, 401, "Invalid old password");
         }
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        new ResponseHanding(res, 500, "Internal Server Error");
     }
 };
 
