@@ -157,6 +157,66 @@ exports.sendEmailUser = express_async_handler(async (req, res) => {
 });
 
 
+exports.sendEmailUserPasswordOTP = express_async_handler(async (req, res) => {
+    const { email } = req.body;
+    try {
+        // Check if any of the required fields are missing
+        if ( !email) {
+            return new ResponseHanding(res, 400, "All Fields are required")
+        }
+
+        const user = await USER.findOne({ email });
+        
+
+        const OTP = otpGenerator.generate(4, {
+            digits: true,
+            lowerCaseAlphabets: false,
+            upperCaseAlphabets: false,
+            specialChars: false,
+        });
+
+        if (OTP) {
+            // Store the OTP and its expiration timer
+            // otpMap.set(email, OTP);
+            // console.log(otpMap.get(email));
+            // console.log(otpMap.has(email));
+            // Set a timer to remove the OTP after 30 seconds
+            // setTimeout(async () => {
+            //     otpMap.delete(user.email);
+            //     await USER.updateOne({ email: email }, { $unset: { OTP: 1 } })
+            // }, 30000); // 30,000 milliseconds = 30 seconds
+
+
+            const mailOptions = {
+                from: process.env.SMTP_MAIL,
+                to: email,
+                subject: 'OTP For verification',
+                text: `Verification Code to walk-in: ${OTP}`,
+            };
+
+           
+            user.OTP = OTP
+            user.save();
+
+            transport.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.error(error);
+                    return new ResponseHanding(res, 500, "Failed to send OTP", false)
+                } else {
+                    console.log('Email sent successfully');
+                    return new ResponseHanding(res, 200, "Email sent successfully and Account Created without Verify", true, OTP)
+                }
+            });
+        } else {
+            return new ResponseHanding(res, 400, "OTP Expired or Not generated", false)
+        }
+    } catch (error) {
+        console.error(error);
+        return new ResponseHanding(res, 500, "Internal Server Error", false)
+    }
+});
+
+
 
 exports.sendEmailProvider = express_async_handler(async (req, res) => {
     const { shortcode } = req.body;

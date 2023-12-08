@@ -133,6 +133,33 @@ exports.verifyAccountSignup = async (req, res) => {
     }
 }
 
+exports.forgetPassOTP = async (req, res) => {
+    const { email, OTP } = req.body;
+
+    try {
+        if (!email || !OTP) {
+            return new ResponseHanding(res, 400, "All Fields are required")
+        }
+
+        // Find the user by email
+        const user = await USER.findOne({ email: email });
+
+        if (!user) {
+            return new ResponseHanding(res, 404, "User not found")
+        }
+
+        if (user.OTP !== OTP) {
+            return new ResponseHanding(res, 401, "OTP is invalid")
+        }
+
+        return new ResponseHanding(res, 200, "Account Verified", true)
+    } catch (error) {
+        // Handle any unexpected errors
+        console.error(error);
+        return new ResponseHanding(res, 500, "Internal Server Error")
+    }
+}
+
 
 exports.GettingUSERSession = async (req, res) => {
     if (req.session.isAuthenticated) {
@@ -212,6 +239,7 @@ exports.gettingUSER = async (req, res) => {
     }
 };
 
+
 exports.ResetPassUSER = async (req, res) => {
     try {
         const { email, password } = req.body
@@ -237,6 +265,7 @@ exports.ResetPassUSER = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 
 exports.updatePassUSER = async (req, res) => {
     try {

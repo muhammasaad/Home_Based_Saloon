@@ -32,23 +32,28 @@ const auth = async (req, res, next) => {
 
 
 router.
-    // post('/signup', userCRUD.SignUP)
     // done
     post('/signup', emailSender.sendEmailUser)
     // done
     .post('/otp-verification', userCRUD.verifyAccountSignup)
-    // .post('/sendEmail', emailSender.sendEmail)
     // done
     .post('/login', userCRUD.LogIN)
     // done
     .get('/get', auth, userCRUD.gettingUSER)
+
+// Forget-Password 
+post('/forgetPassword', emailSender.sendEmailUserPasswordOTP)
+post('/forgetPasswordOtp', userCRUD.forgetPassOTP)
+.patch('/newPassword', userCRUD.ResetPassUSER)
+
+
+
 
 
     .get('/get/session', userCRUD.GettingUSERSession)
     .post('/add/fav/services', auth, userCRUD.addFavServices)
     .get('/fetch/fav/services', userCRUD.getFavServices)
     .delete('/delete/fav/services', userCRUD.deleteFavServices)
-    .patch('/resetPass', userCRUD.ResetPassUSER)
     .patch('/update/UserDetail', userCRUD.replaceAndUpdateUSER)
     .patch('/update/Password', userCRUD.updatePassUSER)
     .post('/post/address', userCRUD.postAddressUSER)
