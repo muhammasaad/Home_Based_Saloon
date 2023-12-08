@@ -165,7 +165,7 @@ exports.sendEmailUserPasswordOTP = express_async_handler(async (req, res) => {
             return new ResponseHanding(res, 400, "All Fields are required")
         }
 
-        const user = await USER.findOne({ email });
+        const user = await USER.findOne({ email: email });
         
 
         const OTP = otpGenerator.generate(4, {
