@@ -42,8 +42,8 @@ router.
     .get('/get', auth, userCRUD.gettingUSER)
 
 // Forget-Password 
-post('/forgetPassword', emailSender.sendEmailUserPasswordOTP)
-post('/forgetPasswordOtp', userCRUD.forgetPassOTP)
+.post('/forgetPassword', emailSender.sendEmailUserPasswordOTP)
+.post('/forgetPasswordOtp', userCRUD.forgetPassOTP)
 .patch('/newPassword', userCRUD.ResetPassUSER)
 
 
