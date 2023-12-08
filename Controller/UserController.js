@@ -320,36 +320,38 @@ exports.changePassword = async (req, res) => {
 
 exports.replaceAndUpdateUSER = async (req, res) => {
     try {
-        const { id, firstname, lastname, email, phoneNumber } = req.body
-        if (!id) {
-            return res.status(400).json({ message: "All fields are required." });
+        const token = req.get('Authorization').split('Bearer ')[1];
+
+        const verify = jwt.verify(token, process.env.SECRET_KEY);
+        if (!verify.id) {
+            // If the 'id' is not present in the token payload, respond with a 401 Unauthorized status
+            return new ResponseHanding(res, 401, "Unauthorized");
         }
-        // Find the user by their ID
-        const existingUser = await USER.findOne({ id: id });
 
-        if (!existingUser) {
+        const user = await USER.findOne({ _id: verify.id });
+        if (!user) {
             // If the user is not found, respond with a 404 Not Found status
-            res.status(404).json({ message: "User not found" });
-        } else {
-            // Update the user with the new data and return the updated user
-            const updatedUser = await USER.findOneAndUpdate(
-                { id: id },
-                { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
-                { new: true }
-            );
+            return new ResponseHanding(res, 404, "User not found");
+        }
+        const { firstname, lastname, email, phoneNumber } = req.body
 
-            if (updatedUser) {
-                // If the user is updated successfully, respond with a 200 OK status and the updated user data
-                res.status(200).json(updatedUser);
-            } else {
-                // If there was an issue updating the user, respond with a 500 Internal Server Error
-                res.status(500).json({ message: "User update failed" });
-            }
+        const updatedUser = await USER.findOneAndUpdate(
+            { _id: verify.id },
+            { firstname: firstname, lastname: lastname, email: email, phoneNumber: phoneNumber },
+            { new: true }
+        );
+
+        if (updatedUser) {
+            // If the user is updated successfully, respond with a 200 OK status and the updated user data
+            new ResponseHanding(res, 200, "Update User SuccessfullY", true, updatedUser);
+        } else {
+            // If there was an issue updating the user, respond with a 500 Internal Server Error
+            new ResponseHanding(res, 500, "User Updated Failed");
         }
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
-        res.status(500).json({ message: "Internal Server Error" });
+        return new ResponseHanding(res, 500, "Internal Server Error");
     }
 };
 

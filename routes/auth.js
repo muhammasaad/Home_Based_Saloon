@@ -50,6 +50,7 @@ router.
 .patch('/updatePassword', auth,userCRUD.changePassword)
 
 
+.patch('/updateUserDetail', auth, userCRUD.replaceAndUpdateUSER)
 
 
 
@@ -57,7 +58,6 @@ router.
     .post('/add/fav/services', auth, userCRUD.addFavServices)
     .get('/fetch/fav/services', userCRUD.getFavServices)
     .delete('/delete/fav/services', userCRUD.deleteFavServices)
-    .patch('/update/UserDetail', userCRUD.replaceAndUpdateUSER)
     .post('/post/address', userCRUD.postAddressUSER)
     .delete('/delete/address', userCRUD.deleteAddressUSER)
     .post('/add/feedback', userCRUD.postFeedbackUSER)
