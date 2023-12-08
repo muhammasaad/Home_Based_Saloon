@@ -40,6 +40,7 @@ router.
     // .post('/sendEmail', emailSender.sendEmail)
     // done
     .post('/login', userCRUD.LogIN)
+    // done
     .get('/get', auth, userCRUD.gettingUSER)
 
 

@@ -33,7 +33,7 @@ const userScema = new Schema({
     country: String,
     phoneNumber: { type: String },
     wallet: Number,
-    verified: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
     tokenVersion: { type: String }
 },
     { timestamps: true }

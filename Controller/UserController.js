@@ -14,10 +14,10 @@ const jwt = require('jsonwebtoken')
 
 exports.SignUP = async (req, res) => {
     try {
-        const { firstname, lastname, email, password, country } = req.body;
+        const { firstname, lastname, email, password, country, phoneNumber } = req.body;
 
         // Check if any of the required fields are missing
-        if (!firstname || !lastname || !email || !password || !country) {
+        if (!firstname || !lastname || !email || !password || !country |phoneNumber) {
             return res.status(400).json({ message: "All fields are required." });
         }
 
@@ -31,7 +31,7 @@ exports.SignUP = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, saltRound);
 
         // Create a new user
-        const user = await USER.create({ firstname, lastname, email, password: hashedPassword, country: country });
+        const user = await USER.create({ firstname, lastname, email, password: hashedPassword, country: country, phoneNumber: phoneNumber });
         user.id = user._id
 
         user.save()
@@ -81,7 +81,7 @@ exports.LogIN = async (req, res) => {
         const token = await jwt.sign({ id: user._id, tokenVersion: tokenVersion }, process.env.SECRET_KEY);
         user.tokenVersion = tokenVersion
         user.save()
-        return new ResponseHanding(res, 200, "Logged in successfully", true, token)
+        return new ResponseHanding(res, 200, "Logged in successfully", true, token, user)
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
@@ -108,9 +108,24 @@ exports.verifyAccountSignup = async (req, res) => {
             return new ResponseHanding(res, 401, "OTP is invalid")
         }
 
-        user.verified = true
+        const tokenVes = otpGenerator.generate(9, {
+            digits: true,
+            lowerCaseAlphabets: false,
+            upperCaseAlphabets: false,
+            specialChars: false,
+        });
+        const tokenVersion = tokenVes
+
+
+        // OTP is valid; proceed with login
+        // req.session.isAuthenticated = true;
+        // req.session.user = { token };
+        const token = await jwt.sign({ id: user._id, tokenVersion: tokenVersion }, process.env.SECRET_KEY);
+        user.tokenVersion = tokenVersion
+        user.isVerified = true
         user.save()
-        return new ResponseHanding(res, 200, "Created Account verified", true, user)
+
+        return new ResponseHanding(res, 200, "Created Account verified", true, user, token)
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
