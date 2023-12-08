@@ -81,7 +81,7 @@ exports.LogIN = async (req, res) => {
         const token = await jwt.sign({ id: user._id, tokenVersion: tokenVersion }, process.env.SECRET_KEY);
         user.tokenVersion = tokenVersion
         user.save()
-        return new ResponseHanding(res, 200, "Logged in successfully", true, token, user)
+        return new ResponseHanding(res, 200, "Logged in successfully", true, user, token)
     } catch (error) {
         // Handle any unexpected errors
         console.error(error);
