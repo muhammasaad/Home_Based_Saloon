@@ -16,10 +16,10 @@ const auth = async (req, res, next) => {
         if (verify.id) {
             console.log(token)
             const user = await USER.findOne({ _id: verify.id })
-            if (user.tokenVersion === verify.tokenVersion) {
+            if (user) {
                 next();
             } else {
-                new ResponseHanding(res, 401, "Token Expired ");
+                return "User Not Found"
             }
         }
         else {
@@ -41,16 +41,16 @@ router.
     // done
     .get('/get', auth, userCRUD.gettingUSER)
 
-// Forget-Password 
-.post('/forgetPassword', emailSender.sendEmailUserPasswordOTP)
-.post('/forgetPasswordOtp', userCRUD.forgetPassOTP)
-.patch('/newPassword', userCRUD.ResetPassUSER)
+    // Forget-Password 
+    .post('/forgetPassword', emailSender.sendEmailUserPasswordOTP)
+    .post('/forgetPasswordOtp', userCRUD.forgetPassOTP)
+    .patch('/newPassword', userCRUD.ResetPassUSER)
 
 
-.patch('/updatePassword', auth,userCRUD.changePassword)
+    .patch('/updatePassword', auth, userCRUD.changePassword)
 
 
-.patch('/updateUserDetail', auth, userCRUD.replaceAndUpdateUSER)
+    .patch('/updateUserDetail', auth, userCRUD.replaceAndUpdateUSER)
 
 
 

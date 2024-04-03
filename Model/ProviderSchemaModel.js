@@ -22,7 +22,7 @@ const providerSchema = new Schema({
         reviews: [
             {
                 user: {
-                    type: mongoose.Schema.ObjectId,
+                    type: Schema.Types.ObjectId,
                     ref: "User",
                 },
                 name: {
@@ -60,6 +60,8 @@ const providerSchema = new Schema({
     phoneNumber: { type: String },
     wallet: Number,
     tokenVersion: { type: String }
-})
+},
+    { timestamps: true }
+)
 
 exports.provider = mongoose.model("Provider", providerSchema)
